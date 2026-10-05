@@ -2,7 +2,7 @@
 
 ## Hibrit Çalışma Modeli
 
-Nova Teknoloji'de hibrit çalışma modeli uygulanır. Çalışanlar haftada 2 gün ofiste, 3 gün uzaktan çalışır. Salı ve Perşembe günleri tüm ekiplerin ofiste bulunduğu ortak ofis günleridir. Ekip yöneticileri, proje ihtiyaçlarına göre ek ofis günleri talep edebilir.
+Mitogent Teknoloji'de hibrit çalışma modeli uygulanır. Çalışanlar haftada 2 gün ofiste, 3 gün uzaktan çalışır. Salı ve Perşembe günleri tüm ekiplerin ofiste bulunduğu ortak ofis günleridir. Ekip yöneticileri, proje ihtiyaçlarına göre ek ofis günleri talep edebilir.
 
 ## Çekirdek Çalışma Saatleri
 

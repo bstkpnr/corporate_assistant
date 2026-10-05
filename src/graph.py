@@ -1,4 +1,4 @@
-"""Ada'nın LangGraph ile kurulmuş agent grafı.
+"""Bastet'in LangGraph ile kurulmuş agent grafı.
 
 Akış:
     START -> agent

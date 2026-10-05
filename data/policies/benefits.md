@@ -14,7 +14,7 @@ Her çalışanın yıllık 15.000 TL eğitim bütçesi vardır. Bu bütçe; onli
 
 ## Spor ve Sağlıklı Yaşam
 
-Şirketin anlaşmalı olduğu spor salonlarında üyelik ücretinin %50'si şirket tarafından karşılanır. Anlaşmalı salonların listesi ve başvuru için ik@novateknoloji.com adresine yazılabilir.
+Şirketin anlaşmalı olduğu spor salonlarında üyelik ücretinin %50'si şirket tarafından karşılanır. Anlaşmalı salonların listesi ve başvuru için ik@mitogent.com adresine yazılabilir.
 
 ## Doğum Yardımı
 

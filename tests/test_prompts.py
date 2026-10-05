@@ -11,6 +11,6 @@ def test_every_prompt_loads(name):
 
 
 def test_system_prompt_has_no_unfilled_placeholders():
-    text = load_prompt("system_prompt", employee_name="Deniz Kaya", employee_id="E001")
-    assert "Deniz Kaya" in text and "E001" in text
+    text = load_prompt("system_prompt", employee_name="Muhammet Boğa", employee_id="E001")
+    assert "Muhammet Boğa" in text and "E001" in text
     assert "{" not in text and "}" not in text

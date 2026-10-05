@@ -1,4 +1,4 @@
-"""Terminalde Ada ile sohbet (LangGraph agent'ı).
+"""Terminalde Bastet ile sohbet (LangGraph agent'ı).
 
 Çalıştırmak için:            python -m scripts.chat
 Başka bir çalışan olarak:    python -m scripts.chat --user E004
@@ -15,6 +15,7 @@ from src.database import get_employee
 from src.graph import build_graph
 from src.prompts import ASSISTANT_NAME
 from src.rag import retrieve
+from src.service import make_config, run_graph
 
 
 def main():
@@ -31,28 +32,23 @@ def main():
     debug = False
 
     def new_config():
-        # thread_id: konuşmanın kimliği. Checkpointer geçmişi bu kimlikle saklar.
-        # recursion_limit: sonsuz döngüye karşı en fazla adım sayısı.
-        return {"configurable": {"thread_id": str(uuid.uuid4())}, "recursion_limit": 15}
+        return make_config(str(uuid.uuid4()))
 
     config = new_config()
 
+    def print_tool_call(call):
+        args_text = ", ".join(f"{k}={v!r}" for k, v in call["args"].items())
+        print(f"  [araç] {call['name']}({args_text})")
+
+    def print_tool_result(msg):
+        if debug:
+            for line in msg.text.splitlines()[:10]:
+                print(f"         | {line}")
+
     def run(graph_input):
-        """Grafı çalıştırır, adımları ekrana yazar. Graf onay için durursa
-        interrupt bilgisini döndürür, durmazsa None döndürür."""
-        for update in graph.stream(graph_input, config, stream_mode="updates"):
-            for node, data in update.items():
-                if node == "__interrupt__":
-                    return data[0].value
-                if node == "agent":
-                    for call in data["messages"][-1].tool_calls:
-                        args_text = ", ".join(f"{k}={v!r}" for k, v in call["args"].items())
-                        print(f"  [araç] {call['name']}({args_text})")
-                elif node == "tools" and debug:
-                    for msg in data["messages"]:
-                        for line in msg.text.splitlines()[:10]:
-                            print(f"         | {line}")
-        return None
+        """Grafı çalıştırır, adımları ekrana yazar ve sonucu döndürür."""
+        return run_graph(graph, graph_input, config,
+                         on_tool_call=print_tool_call, on_tool_result=print_tool_result)
 
     print("Belgeler yükleniyor...")
     retrieve("ısınma")
@@ -81,16 +77,16 @@ def main():
             continue
 
         try:
-            pending = run({"messages": [HumanMessage(content=user_input)]})
+            result = run({"messages": [HumanMessage(content=user_input)]})
 
             # Graf onay için durduysa: kullanıcıya sor, cevabıyla devam ettir
-            while pending:
+            while result["status"] == "approval_required":
                 print("\n  ONAY GEREKİYOR")
-                for action in pending["actions"]:
+                for action in result["pending_actions"]:
                     print(f"  - {action}")
                 answer = input("  Onaylıyor musunuz? (e/h): ").strip().lower()
                 decision = "onay" if answer in ("e", "evet") else "red"
-                pending = run(Command(resume=decision))
+                result = run(Command(resume=decision))
         except GraphRecursionError:
             print(f"{ASSISTANT_NAME}: Bu isteği tamamlamak için çok fazla adım gerekti, "
                   "lütfen daha küçük adımlarla tekrar dener misiniz?\n")
@@ -99,8 +95,7 @@ def main():
             print(f"[Hata] {e}\n")
             continue
 
-        final = graph.get_state(config).values["messages"][-1]
-        print(f"\n{ASSISTANT_NAME}: {final.text}\n")
+        print(f"\n{ASSISTANT_NAME}: {result['reply']}\n")
 
 
 if __name__ == "__main__":

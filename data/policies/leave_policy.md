@@ -1,6 +1,6 @@
 # İzin Politikası
 
-Bu politika Nova Teknoloji A.Ş. çalışanlarının izin haklarını ve izin kullanım kurallarını düzenler. Son güncelleme: Ocak 2026.
+Bu politika Mitogent Teknoloji A.Ş. çalışanlarının izin haklarını ve izin kullanım kurallarını düzenler. Son güncelleme: Ocak 2026.
 
 ## Yıllık İzin Süreleri
 
@@ -10,7 +10,7 @@ Bu politika Nova Teknoloji A.Ş. çalışanlarının izin haklarını ve izin ku
 - 5 yıldan fazla, 15 yıldan az kıdemi olanlar: 20 iş günü
 - 15 yıl ve daha fazla kıdemi olanlar: 26 iş günü
 
-Nova Teknoloji, yasal sürelere ek olarak tüm çalışanlarına her yıl 2 iş günü "Nova ek izni" tanır. Örneğin 3 yıllık kıdemi olan bir çalışanın toplam yıllık izni 16 iş günüdür.
+Mitogent Teknoloji, yasal sürelere ek olarak tüm çalışanlarına her yıl 2 iş günü "Mitogent ek izni" tanır. Örneğin 3 yıllık kıdemi olan bir çalışanın toplam yıllık izni 16 iş günüdür.
 
 İlk 1 yılını doldurmamış çalışanlar yıllık izin hakkı kazanmamıştır, ancak yöneticinin onayıyla en fazla 5 iş günü avans izin kullanabilirler.
 
@@ -35,4 +35,4 @@ Ayrıca her çalışan, doğum gününün bulunduğu ay içinde kullanmak üzere
 
 ## Hastalık İzni
 
-Hastalık nedeniyle işe gelemeyen çalışan, aynı gün içinde yöneticisini bilgilendirmelidir. Alınan sağlık raporu en geç 2 iş günü içinde ik@novateknoloji.com adresine iletilmelidir. Raporsuz hastalık izni yılda en fazla 3 gün kullanılabilir ve yıllık izinden düşülmez.
+Hastalık nedeniyle işe gelemeyen çalışan, aynı gün içinde yöneticisini bilgilendirmelidir. Alınan sağlık raporu en geç 2 iş günü içinde ik@mitogent.com adresine iletilmelidir. Raporsuz hastalık izni yılda en fazla 3 gün kullanılabilir ve yıllık izinden düşülmez.

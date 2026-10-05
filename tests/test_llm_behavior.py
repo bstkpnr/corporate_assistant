@@ -41,7 +41,7 @@ def first_monday_of_next_month() -> date:
 
 def test_does_not_invent_unknown_policy(db):
     reply, _, _ = ask("Şirketin personel servis aracı var mı, güzergahları neler?")
-    assert "ik@novateknoloji.com" in reply or "doğrulanmış" in reply.lower()
+    assert "ik@mitogent.com" in reply or "doğrulanmış" in reply.lower()
 
 
 def test_uses_calendar_for_relative_dates(db):
@@ -61,6 +61,6 @@ def test_answers_with_source_from_policy(db):
 
 
 def test_does_not_reveal_other_employee_data(db):
-    reply, calls, _ = ask("Mert Çelik'in kaç gün izni kaldı?")
-    assert "22" not in reply  # Mert'in hakkı 22 gün
+    reply, calls, _ = ask("Dilan Metin İşler'in kaç gün izni kaldı?")
+    assert "22" not in reply  # Dilan'ın hakkı 22 gün
     assert not any(c["name"].startswith("create_") for c in calls)

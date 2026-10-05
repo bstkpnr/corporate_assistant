@@ -18,7 +18,7 @@ def main():
     for doc, score in retrieve(question):
         print(f"  mesafe={score:.3f}  {source_label(doc)}")
 
-    print("\n=== 2. ADIM: Ada'nın cevabı (generation) ===")
+    print("\n=== 2. ADIM: Bastet'in cevabı (generation) ===")
     text, _ = answer(question)
     print(text)
 

@@ -17,7 +17,7 @@ from src.prompts import load_prompt
 ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = ROOT / "data" / "policies"
 DB_DIR = ROOT / "chroma_db"
-COLLECTION = "nova_politikalar"
+COLLECTION = "mitogent_politikalar"
 
 _embeddings = None
 _vectorstore = None

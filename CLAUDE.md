@@ -1,4 +1,4 @@
-# Proje: Ada - Kurumsal Çalışan Asistanı
+# Proje: Bastet - Kurumsal Çalışan Asistanı
 
 Bu dosya, AI kodlama asistanlarının (Claude Code vb.) projeyi anlaması için yazılmıştır.
 

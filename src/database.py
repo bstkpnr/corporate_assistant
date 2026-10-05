@@ -8,7 +8,7 @@ from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DB_PATH = ROOT / "data" / "nova.db"
+DB_PATH = ROOT / "data" / "mitogent.db"
 
 SCHEMA = """
 CREATE TABLE employees (
@@ -24,7 +24,7 @@ CREATE TABLE employees (
 CREATE TABLE leave_balances (
     employee_id   TEXT REFERENCES employees(id),
     year          INTEGER NOT NULL,
-    entitled_days INTEGER NOT NULL,   -- o yılın izin hakkı (Nova ek izni dahil)
+    entitled_days INTEGER NOT NULL,   -- o yılın izin hakkı (Mitogent ek izni dahil)
     carried_over  INTEGER NOT NULL,   -- geçen yıldan devreden
     used_days     INTEGER NOT NULL,   -- onaylanıp kullanılan
     PRIMARY KEY (employee_id, year)
@@ -54,22 +54,24 @@ CREATE TABLE it_tickets (
 
 EMPLOYEES = [
     # id, ad, e-posta, departman, unvan, yönetici, işe başlama
-    ("E005", "Can Öztürk", "can.ozturk@novateknoloji.com", "Yazılım", "Yazılım Müdürü", None, "2016-05-02"),
-    ("E002", "Elif Demir", "elif.demir@novateknoloji.com", "İnsan Kaynakları", "İK Müdürü", None, "2015-09-14"),
-    ("E001", "Deniz Kaya", "deniz.kaya@novateknoloji.com", "Yazılım", "Yazılım Geliştirici", "E005", "2023-03-01"),
-    ("E003", "Mert Çelik", "mert.celik@novateknoloji.com", "Yazılım", "Kıdemli Yazılım Geliştirici", "E005", "2018-11-19"),
-    ("E004", "Zeynep Arslan", "zeynep.arslan@novateknoloji.com", "İnsan Kaynakları", "İK Uzmanı", "E002", "2026-02-02"),
+    ("E005", "Mehmet Abacı", "mehmet.abaci@mitogent.com", "Yazılım", "Yazılım Müdürü", None, "2016-05-02"),
+    ("E002", "Beste Tokpınar Boğa", "beste.boga@mitogent.com", "İnsan Kaynakları", "İK Müdürü", None, "2015-09-14"),
+    ("E001", "Muhammet Boğa", "muhammet.boga@mitogent.com", "Yazılım", "Yazılım Geliştirici", "E005", "2023-03-01"),
+    ("E003", "Dilan Metin İşler", "dilan.isler@mitogent.com", "Yazılım", "Kıdemli Yazılım Geliştirici", "E005", "2018-11-19"),
+    ("E004", "Lila Tokpınar", "lila.tokpinar@mitogent.com", "İnsan Kaynakları", "İK Uzmanı", "E002", "2026-02-02"),
+    ("E006", "Limon Tokpınar", "limon.tokpinar@mitogent.com", "Yazılım", "UI/UX Tasarımcısı", "E005", "2022-04-04"),
 ]
 
 
 def balances_for(year: int):
-    # employee_id, yıl, hak (yasal + 2 gün Nova ek izni), devreden, kullanılan
+    # employee_id, yıl, hak (yasal + 2 gün Mitogent ek izni), devreden, kullanılan
     return [
         ("E001", year, 16, 2, 4),
         ("E002", year, 28, 5, 12),
         ("E003", year, 22, 5, 10),
         ("E004", year, 0, 0, 0),    # 1 yılını doldurmadı
         ("E005", year, 22, 3, 8),
+        ("E006", year, 16, 1, 6),
     ]
 
 

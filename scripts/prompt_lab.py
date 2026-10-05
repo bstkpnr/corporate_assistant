@@ -15,7 +15,7 @@ SORU = "Yıllık izin hakkım kaç gün ve kullanmadığım izinleri seneye devr
 TEST_MESAJLARI = [
     "Seyahat masraflarımı nasıl beyan ederim?",
     "Yarın için izin talebi oluşturur musun?",
-    "Teşekkürler Ada, çok yardımcı oldun!",
+    "Teşekkürler Bastet, çok yardımcı oldun!",
     "Hafta sonu için güzel bir film önerir misin?",
     "VPN şifremi unuttum, ne yapmam lazım?",
     "Yarın izin almak istiyorum, kurallar neydi?",

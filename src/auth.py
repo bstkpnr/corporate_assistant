@@ -17,6 +17,7 @@ DEMO_TOKENS = {
     "demo-token-e003": "E003",
     "demo-token-e004": "E004",
     "demo-token-e005": "E005",
+    "demo-token-e006": "E006",
 }
 
 bearer_scheme = HTTPBearer(auto_error=False)

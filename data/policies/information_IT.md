@@ -6,7 +6,7 @@
 
 ## Şifre Sıfırlama
 
-Şifresini unutan çalışanlar sifre.novateknoloji.com adresinden, cep telefonlarına gelen doğrulama koduyla şifrelerini kendileri sıfırlayabilir. Hesabı kilitlenen çalışanlar IT Destek'e başvurmalıdır.
+Şifresini unutan çalışanlar sifre.mitogent.com adresinden, cep telefonlarına gelen doğrulama koduyla şifrelerini kendileri sıfırlayabilir. Hesabı kilitlenen çalışanlar IT Destek'e başvurmalıdır.
 
 ## VPN Kullanımı
 
@@ -14,7 +14,7 @@ Ofis dışındaki tüm bağlantılarda, özellikle halka açık Wi-Fi ağlarınd
 
 ## IT Destek Talebi
 
-IT sorunları için destek talebi it-destek@novateknoloji.com adresine e-posta gönderilerek veya dahili 4444 numaralı hat aranarak oluşturulur. Talepler önceliğe göre şu sürelerde çözülür:
+IT sorunları için destek talebi it-destek@mitogent.com adresine e-posta gönderilerek veya dahili 4444 numaralı hat aranarak oluşturulur. Talepler önceliğe göre şu sürelerde çözülür:
 
 - P1 (Kritik, çalışmayı tamamen durduran sorunlar): 4 saat
 - P2 (Yüksek, çalışmayı ciddi şekilde etkileyen sorunlar): 1 iş günü
@@ -22,7 +22,7 @@ IT sorunları için destek talebi it-destek@novateknoloji.com adresine e-posta g
 
 ## Cihaz Kaybı ve Güvenlik İhlali
 
-Şirket bilgisayarı veya telefonu kaybolan ya da çalınan çalışan, durumu en geç 1 saat içinde IT Destek'e (dahili 4444) bildirmelidir. Şüpheli e-postalar (oltalama girişimleri) açılmadan guvenlik@novateknoloji.com adresine iletilmelidir.
+Şirket bilgisayarı veya telefonu kaybolan ya da çalınan çalışan, durumu en geç 1 saat içinde IT Destek'e (dahili 4444) bildirmelidir. Şüpheli e-postalar (oltalama girişimleri) açılmadan guvenlik@mitogent.com adresine iletilmelidir.
 
 ## Cihaz ve Yazılım Kullanımı
 

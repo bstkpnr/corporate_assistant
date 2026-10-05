@@ -17,7 +17,7 @@ import src.graph as graph_module
 
 @pytest.fixture
 def db(tmp_path, monkeypatch):
-    """Her test için geçici, temiz bir veritabanı. Gerçek data/nova.db'ye dokunmaz."""
+    """Her test için geçici, temiz bir veritabanı. Gerçek data/mitogent.db'ye dokunmaz."""
     monkeypatch.setattr(database, "DB_PATH", tmp_path / "test.db")
     database.init_db()
     return database.DB_PATH

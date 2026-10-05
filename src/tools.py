@@ -1,4 +1,4 @@
-"""Ada'nın kullanabileceği araçlar (tools).
+"""Bastet'in kullanabileceği araçlar (tools).
 
 Her aracın docstring'i, LLM'e aracın ne işe yaradığını anlatan açıklamadır.
 LLM hangi aracı ne zaman çağıracağına bu açıklamalara bakarak karar verir;

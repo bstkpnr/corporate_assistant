@@ -1,11 +1,11 @@
-"""Ada'nın REST API'si (FastAPI).
+"""Bastet'in REST API'si (FastAPI).
 
 Çalıştırmak için:  uvicorn src.api:app --reload
 Tarayıcıda test:   http://127.0.0.1:8000/docs
 
 Akış:
-  POST /chat                      -> Ada'ya mesaj gönder
-     cevap "completed" ise          -> reply alanında Ada'nın cevabı var
+  POST /chat                      -> Bastet'e mesaj gönder
+     cevap "completed" ise          -> reply alanında Bastet'in cevabı var
      cevap "approval_required" ise  -> pending_actions alanında onay bekleyen işlemler var
   POST /chat/{thread_id}/approval -> bekleyen işlemi onayla veya reddet
 """
@@ -25,9 +25,16 @@ from src.auth import get_current_employee
 from src.graph import build_graph
 from src.logging_config import setup_logging
 from src.rag import retrieve
+from src.service import make_config, run_graph
+
+from pathlib import Path
+
+from fastapi.responses import FileResponse
+
+from src.dashboard import get_dashboard
 
 setup_logging()
-logger = logging.getLogger("ada.api")
+logger = logging.getLogger("bastet.api")
 
 
 # ---------- İstek ve cevap modelleri ----------
@@ -66,13 +73,13 @@ def get_graph(employee_id: str):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     retrieve("ısınma")  # embedding modelini ve vektör veritabanını önceden yükle
-    logger.info("Ada API hazır")
+    logger.info("Bastet API hazır")
     yield
 
 
 app = FastAPI(
-    title="Ada - Kurumsal Çalışan Asistanı API",
-    description="Nova Teknoloji çalışanları için RAG ve tool calling destekli AI asistanı.",
+    title="Bastet - Kurumsal Çalışan Asistanı API",
+    description="Mitogent Teknoloji çalışanları için RAG ve tool calling destekli AI asistanı.",
     version="0.5.0",
     lifespan=lifespan,
 )
@@ -98,26 +105,10 @@ async def log_requests(request: Request, call_next):
 
 # ---------- Yardımcılar ----------
 
-def run_graph(graph, graph_input, config: dict) -> dict:
-    """Grafı çalıştırır; onay için durursa bekleyen işlemleri döndürür."""
-    tool_calls, pending = [], None
-    for update in graph.stream(graph_input, config, stream_mode="updates"):
-        for node, data in update.items():
-            if node == "__interrupt__":
-                pending = data[0].value["actions"]
-            elif node == "agent":
-                tool_calls += [call["name"] for call in data["messages"][-1].tool_calls]
-
-    if pending:
-        return {"status": "approval_required", "pending_actions": pending, "tool_calls": tool_calls}
-    final = graph.get_state(config).values["messages"][-1]
-    return {"status": "completed", "reply": final.text, "tool_calls": tool_calls}
-
-
 def execute(employee: dict, thread_id: str, graph_input) -> ChatResponse:
     """Grafı hata yönetimi ve loglamayla birlikte çalıştırır."""
     graph = get_graph(employee["id"])
-    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 15}
+    config = make_config(thread_id)
     try:
         result = run_graph(graph, graph_input, config)
     except GraphRecursionError:
@@ -162,7 +153,7 @@ def me(employee: dict = Depends(get_current_employee)):
 
 @app.post("/chat", response_model=ChatResponse, tags=["Sohbet"])
 def chat(request: ChatRequest, employee: dict = Depends(get_current_employee)):
-    """Ada'ya mesaj gönderir. thread_id verilirse mevcut konuşmaya devam eder."""
+    """Bastet'e mesaj gönderir. thread_id verilirse mevcut konuşmaya devam eder."""
     if request.thread_id is None:
         thread_id = str(uuid.uuid4())
         thread_owners[thread_id] = employee["id"]
@@ -184,3 +175,20 @@ def approve(thread_id: str, request: ApprovalRequest, employee: dict = Depends(g
 
     decision = "onay" if request.approved else "red"
     return execute(employee, thread_id, Command(resume=decision))
+
+    # ---------- Web arayüzü (Aşama 7) ----------
+# Bu bloğu src/api.py dosyasının EN SONUNA ekle.
+
+
+WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+
+
+@app.get("/me/dashboard", tags=["Kullanıcı"])
+def dashboard(employee: dict = Depends(get_current_employee)):
+    """Web arayüzünün sol paneli: profil, izin bakiyesi ve son talepler."""
+    return get_dashboard(employee["id"])
+
+
+@app.get("/", include_in_schema=False)
+def index():
+    return FileResponse(WEB_DIR / "index.html")

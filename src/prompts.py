@@ -8,8 +8,8 @@ from pathlib import Path
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
-COMPANY_NAME = "Nova Teknoloji A.Ş."
-ASSISTANT_NAME = "Ada"
+COMPANY_NAME = "Mitogent Teknoloji A.Ş."
+ASSISTANT_NAME = "Bastet"
 WEEKDAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"]
 
 

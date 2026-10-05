@@ -27,4 +27,4 @@ Taksi kullanımı yalnızca saat 22:00'den sonra, toplu taşımanın olmadığı
 
 ## Geri Ödeme Takvimi
 
-Onaylanan masraflar her ayın 15'inde ve son iş gününde çalışanın maaş hesabına yatırılır. Ödemelerle ilgili sorular finans@novateknoloji.com adresine iletilebilir.
+Onaylanan masraflar her ayın 15'inde ve son iş gününde çalışanın maaş hesabına yatırılır. Ödemelerle ilgili sorular finans@mitogent.com adresine iletilebilir.
