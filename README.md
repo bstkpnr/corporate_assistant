@@ -36,3 +36,23 @@ python -m scripts.test_connection
 ## Teknolojiler
 
 Python, LangChain, (yakında) LangGraph, ChromaDB, FastAPI, Docker
+
+## RAG Değerlendirmesi
+
+12 test sorusunda doğru belge bölümünün ilk 3 sonuç içinde bulunma oranı:
+
+| Embedding modeli | Parça boyutu | İsabet |
+|---|---|---|
+| multilingual-e5-small | 200 | %92 |
+| multilingual-e5-small | 800 | %83 |
+| multilingual-e5-small | 1500 | %83 |
+| multilingual-e5-base | 400 | %92 |
+| **multilingual-e5-base** | **800** | **%92** (seçilen) |
+
+**Bulgular**
+- Belgeler önce başlıklara göre bölündüğü için 800 ve 1500 aynı parçaları üretti.
+- Küçük modelde yüksek isabet için parçaları 200 karaktere indirmek gerekti; bu
+  da içeriksiz başlık parçalarına ve bağlamı kopuk listelere yol açtı.
+- Büyük model, bölümleri bütün tutarken aynı isabete ulaştı.
+- Kaçan tek soru ("Udemy kursu...") belgede geçmeyen bir marka adı içeriyor;
+  bu, embedding değil sorgu dönüştürme (query rewriting) ile çözülecek.
