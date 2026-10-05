@@ -22,7 +22,7 @@ from langgraph.prebuilt import ToolNode
 from langgraph.types import Command, interrupt
 
 from src.database import get_employee
-from src.llm import get_llm
+from src.llm import get_fallback_llm, get_llm
 from src.prompts import load_prompt
 from src.tools import SENSITIVE_TOOLS, describe_action, make_tools
 
@@ -34,6 +34,10 @@ def build_graph(employee_id: str, checkpointer=None):
     employee = get_employee(employee_id)
     tools = make_tools(employee_id)
     llm = get_llm(temperature=0).bind_tools(tools)
+    fallback = get_fallback_llm(temperature=0)
+    if fallback is not None:
+        # Ana sağlayıcı hata verirse aynı istek otomatik olarak yedeğe gider
+        llm = llm.with_fallbacks([fallback.bind_tools(tools)])
     system = SystemMessage(content=load_prompt(
         "system_prompt", employee_name=employee["name"], employee_id=employee_id
     ))

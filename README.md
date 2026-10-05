@@ -147,6 +147,27 @@ Sohbet içinde `/debug` araç sonuçlarını gösterir, `/sifirla` yeni konuşma
 
 **Kişisel veri her seferinde kaynaktan okunmalı.** Ada bir noktada kalan izni önceki cevaptaki sayıdan hesapladı. Prompt, kişisel verilerin her soruda araçla yeniden sorgulanmasını zorunlu kılacak şekilde güncellendi.
 
+
+
+### REST API
+
+```bash
+uvicorn src.api:app --reload      # veya: docker compose up --build
+```
+
+Swagger arayüzü: http://127.0.0.1:8000/docs (Authorize: `demo-token-e001`)
+
+| Endpoint | Açıklama |
+|---|---|
+| `POST /chat` | Mesaj gönderir; onay gereken işlemlerde `approval_required` döner |
+| `POST /chat/{thread_id}/approval` | Bekleyen işlemi onaylar veya reddeder |
+| `GET /me` | Token'a göre oturum açmış çalışan |
+| `GET /health` | Servis durumu |
+
+Kimlik istek gövdesinden değil token'dan alınır; kullanıcılar yalnızca kendi
+konuşmalarına erişebilir. Loglar JSON formatındadır ve mesaj içerikleri
+gizlilik nedeniyle loglanmaz.
+
 ## Yol haritası
 
 - [x] Aşama 0: Kurulum ve çoklu LLM sağlayıcı desteği

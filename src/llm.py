@@ -41,3 +41,16 @@ def get_llm(provider: str | None = None, temperature: float = 0.2):
         model_provider=LANGCHAIN_PROVIDER[provider],
         temperature=temperature,
     )
+
+
+def get_fallback_llm(temperature: float = 0.2):
+    """.env içinde FALLBACK_PROVIDER tanımlıysa ve anahtarı varsa yedek modeli
+    döndürür; yoksa None. Ana sağlayıcı hata verirse (çökme, kota, zaman aşımı)
+    istek otomatik olarak bu modele yönlendirilir."""
+    provider = os.getenv("FALLBACK_PROVIDER", "").strip().lower()
+    if not provider or provider == LLM_PROVIDER:
+        return None
+    try:
+        return get_llm(provider, temperature=temperature)
+    except (ValueError, RuntimeError):
+        return None  # anahtar veya model adı eksikse yedeksiz devam et

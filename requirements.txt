@@ -2,7 +2,10 @@ langchain
 langchain-openai
 langchain-anthropic
 langchain-google-genai
+langgraph
 python-dotenv
 langchain-text-splitters
 langchain-chroma
 sentence-transformers
+fastapi
+uvicorn[standard]
