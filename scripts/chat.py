@@ -1,26 +1,54 @@
-"""Terminalde Ada ile sohbet (RAG destekli).
+"""Terminalde Ada ile sohbet (araç kullanan agent).
 
-Çalıştırmak için:  python -m scripts.chat
-Komutlar: /sifirla (geçmişi temizler), /debug (bulunan parçaları göster/gizle), /cikis
+Çalıştırmak için:            python -m scripts.chat
+Başka bir çalışan olarak:    python -m scripts.chat --user E004
+Komutlar: /sifirla (geçmişi temizler), /debug (araç sonuçlarını göster/gizle), /cikis
 """
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+import argparse
 
+from langchain_core.messages import HumanMessage, SystemMessage
+
+from src.agent import run_turn
+from src.database import get_employee
 from src.llm import get_llm
 from src.prompts import ASSISTANT_NAME, load_prompt
-from src.rag import build_rag_message, retrieve, source_label
+from src.rag import retrieve
+from src.tools import make_tools
 
-MAX_HISTORY = 20
+# Geçmiş mesaj sayısıyla değil "tur" sayısıyla sınırlanır. Bir turda araç
+# çağrısı ve sonucu birlikte bulunmalı; ortadan kesilirse API hata verir.
+MAX_TURNS = 8
 
 
 def main():
-    llm = get_llm(temperature=0.3)
-    system = SystemMessage(content=load_prompt("system_prompt"))
-    history = []
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--user", default="E001", help="Oturum açan çalışanın ID'si")
+    args = parser.parse_args()
+
+    employee = get_employee(args.user)
+    if employee is None:
+        print(f"{args.user} adında bir çalışan yok. Önce: python -m scripts.init_db")
+        return
+
+    llm = get_llm(temperature=0)
+    tools = make_tools(employee["id"])
+    system = SystemMessage(content=load_prompt(
+        "system_prompt", employee_name=employee["name"], employee_id=employee["id"]
+    ))
+    turns: list[list] = []
     debug = False
 
     print("Belgeler yükleniyor...")
-    retrieve("ısınma")  # embedding modelini ve veritabanını önceden yükle
-    print(f"{ASSISTANT_NAME} hazır. /sifirla, /debug, /cikis\n")
+    retrieve("ısınma")  # embedding modelini önceden yükle
+    print(f"{ASSISTANT_NAME} hazır. Oturum: {employee['name']} ({employee['id']})")
+    print("Komutlar: /sifirla, /debug, /cikis\n")
+
+    def show_tool_call(name: str, call_args: dict, result: str):
+        args_text = ", ".join(f"{k}={v!r}" for k, v in call_args.items())
+        print(f"  [araç] {name}({args_text})")
+        if debug:
+            for line in result.splitlines()[:12]:
+                print(f"         | {line}")
 
     while True:
         try:
@@ -35,7 +63,7 @@ def main():
             print("Görüşmek üzere!")
             break
         if user_input == "/sifirla":
-            history = []
+            turns = []
             print("(Sohbet geçmişi temizlendi)\n")
             continue
         if user_input == "/debug":
@@ -43,32 +71,17 @@ def main():
             print(f"(Debug modu {'açık' if debug else 'kapalı'})\n")
             continue
 
-        # 1) Retrieval: soruyla ilgili belge parçalarını bul
-        results = retrieve(user_input, k=4)
-        docs = [doc for doc, _ in results]
-        if debug:
-            for doc, score in results:
-                print(f"  [debug] mesafe={score:.3f}  {source_label(doc)}")
+        user_message = HumanMessage(content=user_input)
+        history = [m for turn in turns[-MAX_TURNS:] for m in turn]
 
-        # 2) Belge parçaları sadece BU turdaki mesaja eklenir. Geçmişe sadece
-        #    sorunun kendisi kaydedilir; yoksa her turda eski belgeler de
-        #    tekrar gönderilir ve maliyet hızla büyür.
-        messages = [system] + history + [build_rag_message(user_input, docs)]
-
-        print(f"{ASSISTANT_NAME}: ", end="", flush=True)
-        reply = ""
         try:
-            for chunk in llm.stream(messages):
-                print(chunk.text, end="", flush=True)
-                reply += chunk.text
+            new_messages = run_turn(llm, tools, [system] + history + [user_message], show_tool_call)
         except Exception as e:
-            print(f"\n[Hata] {e}")
+            print(f"[Hata] {e}\n")
             continue
 
-        print("\n")
-        history.append(HumanMessage(content=user_input))
-        history.append(AIMessage(content=reply))
-        history = history[-MAX_HISTORY:]
+        print(f"{ASSISTANT_NAME}: {new_messages[-1].text}\n")
+        turns.append([user_message] + new_messages)
 
 
 if __name__ == "__main__":
