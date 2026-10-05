@@ -45,3 +45,29 @@ Python, LangChain, (yakında) LangGraph, ChromaDB, FastAPI, Docker
 - Büyük model, bölümleri bütün tutarken aynı isabete ulaştı.
 - Kaçan tek soru ("Udemy kursu...") belgede geçmeyen bir marka adı içeriyor;
   bu, embedding değil sorgu dönüştürme (query rewriting) ile çözülecek.
+
+  ## Mimari
+  ```mermaid
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+        __start__([<p>__start__</p>]):::first
+        agent(agent)
+        human_approval(human_approval)
+        tools(tools)
+        __end__([<p>__end__</p>]):::last
+        __start__ --> agent;
+        agent -.-> __end__;
+        agent -.-> human_approval;
+        agent -.-> tools;
+        human_approval -.-> agent;
+        human_approval -.-> tools;
+        tools --> agent;
+        classDef default fill:#f2f0ff,line-height:1.2
+        classDef first fill-opacity:0
+        classDef last fill:#bfb6fc
+
+```

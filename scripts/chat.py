@@ -1,23 +1,20 @@
-"""Terminalde Ada ile sohbet (araç kullanan agent).
+"""Terminalde Ada ile sohbet (LangGraph agent'ı).
 
 Çalıştırmak için:            python -m scripts.chat
 Başka bir çalışan olarak:    python -m scripts.chat --user E004
-Komutlar: /sifirla (geçmişi temizler), /debug (araç sonuçlarını göster/gizle), /cikis
+Komutlar: /sifirla (yeni konuşma), /debug (araç sonuçlarını göster/gizle), /cikis
 """
 import argparse
+import uuid
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage
+from langgraph.errors import GraphRecursionError
+from langgraph.types import Command
 
-from src.agent import run_turn
 from src.database import get_employee
-from src.llm import get_llm
-from src.prompts import ASSISTANT_NAME, load_prompt
+from src.graph import build_graph
+from src.prompts import ASSISTANT_NAME
 from src.rag import retrieve
-from src.tools import make_tools
-
-# Geçmiş mesaj sayısıyla değil "tur" sayısıyla sınırlanır. Bir turda araç
-# çağrısı ve sonucu birlikte bulunmalı; ortadan kesilirse API hata verir.
-MAX_TURNS = 8
 
 
 def main():
@@ -30,25 +27,37 @@ def main():
         print(f"{args.user} adında bir çalışan yok. Önce: python -m scripts.init_db")
         return
 
-    llm = get_llm(temperature=0)
-    tools = make_tools(employee["id"])
-    system = SystemMessage(content=load_prompt(
-        "system_prompt", employee_name=employee["name"], employee_id=employee["id"]
-    ))
-    turns: list[list] = []
+    graph = build_graph(employee["id"])
     debug = False
 
+    def new_config():
+        # thread_id: konuşmanın kimliği. Checkpointer geçmişi bu kimlikle saklar.
+        # recursion_limit: sonsuz döngüye karşı en fazla adım sayısı.
+        return {"configurable": {"thread_id": str(uuid.uuid4())}, "recursion_limit": 15}
+
+    config = new_config()
+
+    def run(graph_input):
+        """Grafı çalıştırır, adımları ekrana yazar. Graf onay için durursa
+        interrupt bilgisini döndürür, durmazsa None döndürür."""
+        for update in graph.stream(graph_input, config, stream_mode="updates"):
+            for node, data in update.items():
+                if node == "__interrupt__":
+                    return data[0].value
+                if node == "agent":
+                    for call in data["messages"][-1].tool_calls:
+                        args_text = ", ".join(f"{k}={v!r}" for k, v in call["args"].items())
+                        print(f"  [araç] {call['name']}({args_text})")
+                elif node == "tools" and debug:
+                    for msg in data["messages"]:
+                        for line in msg.text.splitlines()[:10]:
+                            print(f"         | {line}")
+        return None
+
     print("Belgeler yükleniyor...")
-    retrieve("ısınma")  # embedding modelini önceden yükle
+    retrieve("ısınma")
     print(f"{ASSISTANT_NAME} hazır. Oturum: {employee['name']} ({employee['id']})")
     print("Komutlar: /sifirla, /debug, /cikis\n")
-
-    def show_tool_call(name: str, call_args: dict, result: str):
-        args_text = ", ".join(f"{k}={v!r}" for k, v in call_args.items())
-        print(f"  [araç] {name}({args_text})")
-        if debug:
-            for line in result.splitlines()[:12]:
-                print(f"         | {line}")
 
     while True:
         try:
@@ -63,25 +72,35 @@ def main():
             print("Görüşmek üzere!")
             break
         if user_input == "/sifirla":
-            turns = []
-            print("(Sohbet geçmişi temizlendi)\n")
+            config = new_config()
+            print("(Yeni konuşma başlatıldı)\n")
             continue
         if user_input == "/debug":
             debug = not debug
             print(f"(Debug modu {'açık' if debug else 'kapalı'})\n")
             continue
 
-        user_message = HumanMessage(content=user_input)
-        history = [m for turn in turns[-MAX_TURNS:] for m in turn]
-
         try:
-            new_messages = run_turn(llm, tools, [system] + history + [user_message], show_tool_call)
+            pending = run({"messages": [HumanMessage(content=user_input)]})
+
+            # Graf onay için durduysa: kullanıcıya sor, cevabıyla devam ettir
+            while pending:
+                print("\n  ONAY GEREKİYOR")
+                for action in pending["actions"]:
+                    print(f"  - {action}")
+                answer = input("  Onaylıyor musunuz? (e/h): ").strip().lower()
+                decision = "onay" if answer in ("e", "evet") else "red"
+                pending = run(Command(resume=decision))
+        except GraphRecursionError:
+            print(f"{ASSISTANT_NAME}: Bu isteği tamamlamak için çok fazla adım gerekti, "
+                  "lütfen daha küçük adımlarla tekrar dener misiniz?\n")
+            continue
         except Exception as e:
             print(f"[Hata] {e}\n")
             continue
 
-        print(f"{ASSISTANT_NAME}: {new_messages[-1].text}\n")
-        turns.append([user_message] + new_messages)
+        final = graph.get_state(config).values["messages"][-1]
+        print(f"\n{ASSISTANT_NAME}: {final.text}\n")
 
 
 if __name__ == "__main__":

@@ -93,6 +93,24 @@ def retrieve(question: str, k: int = 4) -> list[tuple[Document, float]]:
     return get_vectorstore().similarity_search_with_score(question, k=k)
 
 
+def retrieve_multi(queries: list[str], k: int = 4) -> list[Document]:
+    """Birden fazla sorguyla arar ve sonuçları birleştirir (multi-query retrieval).
+
+    Birleştirme için Reciprocal Rank Fusion (RRF) kullanılır: her parça, her
+    sorgunun sonuç listesindeki sırasına göre puan alır (1. sıra en yüksek).
+    Birden fazla sorguda üst sıralarda çıkan parçalar en üste yükselir.
+    """
+    scores: dict[str, float] = {}
+    docs: dict[str, Document] = {}
+    for query in queries:
+        for rank, (doc, _) in enumerate(retrieve(query, k=k)):
+            key = f"{doc.metadata.get('kaynak')}|{doc.page_content[:100]}"
+            scores[key] = scores.get(key, 0) + 1 / (60 + rank)
+            docs[key] = doc
+    best = sorted(scores, key=scores.get, reverse=True)[:k]
+    return [docs[key] for key in best]
+
+
 def source_label(doc: Document) -> str:
     bolum = doc.metadata.get("bolum")
     return f"{doc.metadata['kaynak']} > {bolum}" if bolum else doc.metadata["kaynak"]

@@ -15,9 +15,12 @@ from langchain_core.tools import tool
 
 from src.database import get_connection
 from src.prompts import WEEKDAYS
-from src.rag import retrieve, source_label
+from src.rag import retrieve_multi, source_label
 
 SLA = {"P1": "4 saat", "P2": "1 iş günü", "P3": "3 iş günü"}
+
+# Kayıt oluşturan araçlar: graf bunları çalıştırmadan önce kullanıcı onayı alır
+SENSITIVE_TOOLS = {"create_leave_request", "create_it_ticket"}
 LEAVE_TYPES = {"yillik": "Yıllık izin", "mazeret": "Mazeret izni", "hastalik": "Hastalık izni"}
 
 
@@ -59,20 +62,40 @@ def _balance(conn, employee_id: str) -> dict | None:
     }
 
 
+def describe_action(name: str, args: dict) -> str:
+    """Onay ekranı için araç çağrısını insanın okuyabileceği bir özete çevirir.
+    Tarihler ve gün sayısı LLM'den değil koddan hesaplanır."""
+    if name == "create_leave_request":
+        try:
+            start = datetime.strptime(args["start_date"], "%Y-%m-%d").date()
+            end = datetime.strptime(args["end_date"], "%Y-%m-%d").date()
+            leave = LEAVE_TYPES.get(args.get("leave_type"), args.get("leave_type"))
+            return f"İzin talebi: {leave}, {fmt_day(start)} - {fmt_day(end)} ({business_days(start, end)} iş günü)"
+        except (KeyError, ValueError):
+            return f"İzin talebi: {args}"
+    if name == "create_it_ticket":
+        priority = args.get("priority")
+        return (
+            f"IT destek talebi: {args.get('title')} (öncelik {priority}, hedef süre {SLA.get(priority, '?')})\n"
+            f"    Açıklama: {args.get('description')}"
+        )
+    return f"{name}: {args}"
+
+
 def make_tools(employee_id: str) -> list:
     """Oturum açmış çalışana özel araç listesini oluşturur."""
 
     @tool(parse_docstring=True)
-    def search_company_policies(query: str) -> str:
+    def search_company_policies(queries: list[str]) -> str:
         """Şirket politika belgelerinde arama yapar (izin, masraf, uzaktan çalışma,
         bilgi güvenliği ve IT destek, yan haklar). Şirket kuralları, limitler,
         süreler veya prosedürlerle ilgili her soruda kullan.
 
         Args:
-            query: Aranacak konu. Kısa ve açık yaz, örneğin "yıllık izin devri".
+            queries: 1-3 arama ifadesi. Kullanıcının sorusunu belgelerin resmi diline çevir; marka veya ürün adları yerine genel kavramlar kullan (örneğin "Udemy kursu" yerine "online kurs eğitim bütçesi"). Soruyu farklı açılardan ifade eden birden fazla sorgu verebilirsin.
         """
-        results = retrieve(query, k=4)
-        return "\n\n".join(f"[Kaynak: {source_label(d)}]\n{d.page_content}" for d, _ in results)
+        docs = retrieve_multi(queries[:3], k=4)
+        return "\n\n".join(f"[Kaynak: {source_label(d)}]\n{d.page_content}" for d in docs)
 
     @tool(parse_docstring=True)
     def get_calendar(month: str) -> str:
@@ -159,7 +182,7 @@ def make_tools(employee_id: str) -> list:
         leave_type: Literal["yillik", "mazeret", "hastalik"],
     ) -> str:
         """Kullanıcı adına izin talebi oluşturur ve yöneticisinin onayına gönderir.
-        Bu aracı SADECE kullanıcı talebin özetini görüp açıkça onayladıktan sonra çağır.
+        Sistem bu aracı çalıştırmadan önce kullanıcıdan onay alır.
 
         Args:
             start_date: İznin ilk günü, YYYY-MM-DD formatında.
@@ -222,7 +245,7 @@ def make_tools(employee_id: str) -> list:
         priority: Literal["P1", "P2", "P3"],
     ) -> str:
         """Kullanıcı adına IT destek talebi açar.
-        Bu aracı SADECE kullanıcı talebin özetini görüp açıkça onayladıktan sonra çağır.
+        Sistem bu aracı çalıştırmadan önce kullanıcıdan onay alır.
 
         Args:
             title: Sorunun kısa başlığı.

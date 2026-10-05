@@ -1,9 +1,12 @@
 """Arama (retrieval) kalitesini ölçer. LLM kullanmaz, yani ücretsizdir.
 
 Her test sorusu için beklenen belge bölümü, bulunan ilk k parça arasında mı?
-Çalıştırmak için:  python -m scripts.eval_retrieval
+Çalıştırmak için:                  python -m scripts.eval_retrieval
+Sorgu yeniden yazma ile (LLM'li):   python -m scripts.eval_retrieval --rewrite
 """
-from src.rag import retrieve, source_label
+import argparse
+
+from src.rag import retrieve, retrieve_multi, source_label
 
 K = 3
 
@@ -25,9 +28,20 @@ TEST_SET = [
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rewrite", action="store_true", help="Aramadan önce LLM ile sorguyu yeniden yaz")
+    args = parser.parse_args()
+    if args.rewrite:
+        from src.query_rewrite import rewrite_query
+
     hits = 0
     for question, kaynak, bolum in TEST_SET:
-        results = retrieve(question, k=K)
+        if args.rewrite:
+            queries = [question] + rewrite_query(question)
+            docs = retrieve_multi(queries, k=K)
+        else:
+            docs = [doc for doc, _ in retrieve(question, k=K)]
+        results = [(doc, None) for doc in docs]
         found = any(
             doc.metadata.get("kaynak") == kaynak and doc.metadata.get("bolum") == bolum
             for doc, _ in results
@@ -35,11 +49,15 @@ def main():
         hits += found
         mark = "OK  " if found else "YOK "
         print(f"{mark} {question}")
+        if args.rewrite:
+            print(f"      sorgular: {queries[1:]}")
         if not found:
             print(f"      beklenen: {kaynak} > {bolum}")
             print(f"      bulunan : {source_label(results[0][0])}")
 
-    print(f"\nSonuç: {hits}/{len(TEST_SET)} soruda doğru bölüm ilk {K} parça içinde "
+    mode = "sorgu yeniden yazma İLE" if args.rewrite else "doğrudan arama"
+    print(f"\nMod: {mode}")
+    print(f"Sonuç: {hits}/{len(TEST_SET)} soruda doğru bölüm ilk {K} parça içinde "
           f"(isabet oranı: %{100 * hits / len(TEST_SET):.0f})")
 
 
