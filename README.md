@@ -8,18 +8,7 @@ Hayali bir şirketin çalışanlarına yardım eden, Türkçe konuşan bir yapay
 OpenAI, Anthropic ve Google Gemini modelleriyle çalışır; sağlayıcı tek bir
 ayarla değiştirilebilir.
 
-> Proje geliştirme aşamasındadır.
 
-## Yol haritası
-
-- [x] Aşama 0: Kurulum ve çoklu LLM sağlayıcı desteği
-- [ ] Aşama 1: Sohbet ve prompt engineering
-- [ ] Aşama 2: Şirket belgeleri üzerinde RAG
-- [ ] Aşama 3: Tool / function calling
-- [ ] Aşama 4: LangGraph ile agent workflow
-- [ ] Aşama 5: FastAPI, loglama ve Docker
-- [ ] Aşama 6: Testler, değerlendirme ve CI
-- [ ] Aşama 7: Arayüz ve demo
 
 ## Kurulum
 
